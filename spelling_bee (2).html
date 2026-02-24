@@ -1,0 +1,2407 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐝 Spelling Bee - ¡Aprende con Sofía!</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --easy: #4ade80;
+    --easy-dark: #16a34a;
+    --medium: #60a5fa;
+    --medium-dark: #2563eb;
+    --hard: #f472b6;
+    --hard-dark: #db2777;
+    --bee: #fbbf24;
+    --bee-dark: #d97706;
+    --bg: #fffbeb;
+    --card: #ffffff;
+    --text: #1e1b4b;
+    --shadow: 0 8px 32px rgba(0,0,0,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image: 
+      radial-gradient(circle at 20% 20%, rgba(251,191,36,0.15) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(96,165,250,0.15) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, rgba(244,114,182,0.1) 0%, transparent 70%);
+  }
+
+  /* ====== FLOATING DECORATIONS ====== */
+  .floater {
+    position: fixed;
+    pointer-events: none;
+    z-index: 0;
+    animation: floatAround linear infinite;
+    font-size: 2rem;
+    opacity: 0.3;
+    user-select: none;
+  }
+  @keyframes floatAround {
+    0%   { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+    10%  { opacity: 0.3; }
+    90%  { opacity: 0.3; }
+    100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+  }
+
+  /* ====== SCREENS ====== */
+  .screen { display: none; min-height: 100vh; position: relative; z-index: 1; }
+  .screen.active { display: flex; flex-direction: column; align-items: center; }
+
+  /* ====== HOME SCREEN ====== */
+  #home {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 50%, #fde68a 100%);
+    padding: 20px;
+    gap: 20px;
+  }
+
+  .home-header {
+    text-align: center;
+    padding: 30px 20px 10px;
+    animation: bounceIn 0.8s ease;
+  }
+
+  @keyframes bounceIn {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.05); }
+    70% { transform: scale(0.95); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .bee-mascot {
+    font-size: 6rem;
+    display: block;
+    animation: beeBounce 2s ease-in-out infinite;
+    filter: drop-shadow(0 8px 16px rgba(0,0,0,0.2));
+  }
+
+  @keyframes beeBounce {
+    0%, 100% { transform: translateY(0) rotate(-5deg); }
+    50% { transform: translateY(-20px) rotate(5deg); }
+  }
+
+  .home-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2.5rem, 8vw, 4.5rem);
+    color: var(--bee-dark);
+    text-shadow: 3px 3px 0 #fff, 5px 5px 0 rgba(0,0,0,0.1);
+    line-height: 1.1;
+    margin-top: 10px;
+  }
+
+  .home-subtitle {
+    font-size: 1.2rem;
+    color: #6b7280;
+    margin-top: 8px;
+    font-weight: 700;
+  }
+
+  /* Method cards */
+  .methods-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    width: 100%;
+    max-width: 1000px;
+    padding: 0 10px;
+    animation: fadeUp 0.8s ease 0.3s both;
+  }
+
+  @keyframes fadeUp {
+    from { transform: translateY(40px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .method-card {
+    background: white;
+    border-radius: 28px;
+    padding: 28px 24px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 4px solid transparent;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .method-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 6px;
+    border-radius: 28px 28px 0 0;
+  }
+
+  .method-card:nth-child(1)::before { background: linear-gradient(90deg, var(--easy), var(--easy-dark)); }
+  .method-card:nth-child(2)::before { background: linear-gradient(90deg, var(--medium), var(--medium-dark)); }
+  .method-card:nth-child(3)::before { background: linear-gradient(90deg, var(--hard), var(--hard-dark)); }
+
+  .method-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+  }
+
+  .method-card:nth-child(1):hover { border-color: var(--easy); }
+  .method-card:nth-child(2):hover { border-color: var(--medium); }
+  .method-card:nth-child(3):hover { border-color: var(--hard); }
+
+  .method-emoji { font-size: 4rem; display: block; margin-bottom: 12px; }
+
+  .method-badge {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .badge-easy { background: #dcfce7; color: #15803d; }
+  .badge-medium { background: #dbeafe; color: #1d4ed8; }
+  .badge-hard { background: #fce7f3; color: #be185d; }
+
+  .method-name {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.7rem;
+    color: var(--text);
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+
+  .method-desc {
+    color: #6b7280;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .method-steps {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .method-steps li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: #374151;
+    font-weight: 600;
+  }
+
+  .step-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 800; color: white; flex-shrink: 0;
+  }
+  .method-card:nth-child(1) .step-num { background: var(--easy-dark); }
+  .method-card:nth-child(2) .step-num { background: var(--medium-dark); }
+  .method-card:nth-child(3) .step-num { background: var(--hard-dark); }
+
+  .start-btn {
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+    padding: 14px;
+    border: none;
+    border-radius: 16px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.2rem;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .method-card:nth-child(1) .start-btn { background: linear-gradient(135deg, #4ade80, #16a34a); }
+  .method-card:nth-child(2) .start-btn { background: linear-gradient(135deg, #60a5fa, #2563eb); }
+  .method-card:nth-child(3) .start-btn { background: linear-gradient(135deg, #f472b6, #db2777); }
+  .start-btn:hover { transform: scale(1.03); filter: brightness(1.1); }
+
+  .words-count {
+    font-size: 0.85rem;
+    color: #9ca3af;
+    text-align: center;
+    margin-top: 8px;
+    font-weight: 700;
+  }
+
+  /* ====== GAME SCREENS ====== */
+  .game-screen {
+    background: white;
+    padding: 0;
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .game-header {
+    padding: 20px 24px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 100;
+    border-bottom: 3px solid #f3f4f6;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+
+  .back-btn {
+    background: #f3f4f6;
+    border: none;
+    border-radius: 12px;
+    width: 44px; height: 44px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .back-btn:hover { background: #e5e7eb; transform: scale(1.05); }
+
+  .game-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.4rem;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .progress-bar-wrap {
+    height: 8px;
+    background: #f3f4f6;
+    border-radius: 4px;
+    overflow: hidden;
+    flex: 1;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease;
+    background: linear-gradient(90deg, var(--bee), var(--bee-dark));
+  }
+
+  .word-counter {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #6b7280;
+    white-space: nowrap;
+  }
+
+  /* ====== DIFFICULTY TABS ====== */
+  .diff-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 12px 20px;
+    overflow-x: auto;
+    background: white;
+    border-bottom: 2px solid #f3f4f6;
+  }
+
+  .diff-tab {
+    flex-shrink: 0;
+    padding: 8px 18px;
+    border-radius: 50px;
+    border: 2.5px solid transparent;
+    font-family: 'Fredoka One', cursive;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #f9fafb;
+    color: #6b7280;
+  }
+
+  .diff-tab.active-easy { background: #dcfce7; color: #15803d; border-color: #4ade80; }
+  .diff-tab.active-medium { background: #dbeafe; color: #1d4ed8; border-color: #60a5fa; }
+  .diff-tab.active-hard { background: #fce7f3; color: #be185d; border-color: #f472b6; }
+
+  /* ====== WORD CARD ====== */
+  .word-display {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .word-emoji-box {
+    width: 160px; height: 160px;
+    border-radius: 30px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 6rem;
+    position: relative;
+    animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+  }
+
+  @keyframes popIn {
+    from { transform: scale(0.5) rotate(-10deg); opacity: 0; }
+    to { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+
+  .word-easy .word-emoji-box { background: linear-gradient(135deg, #dcfce7, #bbf7d0); }
+  .word-medium .word-emoji-box { background: linear-gradient(135deg, #dbeafe, #bfdbfe); }
+  .word-hard .word-emoji-box { background: linear-gradient(135deg, #fce7f3, #fbcfe8); }
+
+  .word-text {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    color: var(--text);
+    text-align: center;
+    letter-spacing: 2px;
+    animation: slideUp 0.4s ease;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .spanish-trans {
+    font-size: 1.1rem;
+    color: #6b7280;
+    font-weight: 700;
+    background: #f9fafb;
+    padding: 6px 18px;
+    border-radius: 50px;
+    animation: slideUp 0.4s ease 0.1s both;
+  }
+
+  .speak-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 28px;
+    border: none;
+    border-radius: 50px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.2rem;
+    color: white;
+    cursor: pointer;
+    background: linear-gradient(135deg, var(--bee), var(--bee-dark));
+    box-shadow: 0 6px 20px rgba(251,191,36,0.4);
+    transition: all 0.2s;
+    animation: slideUp 0.4s ease 0.2s both;
+  }
+
+  .speak-btn:hover { transform: scale(1.05); box-shadow: 0 10px 30px rgba(251,191,36,0.5); }
+  .speak-btn:active { transform: scale(0.97); }
+
+  .speak-icon { font-size: 1.5rem; transition: transform 0.3s; }
+  .speak-btn.speaking .speak-icon { animation: speakPulse 0.5s ease infinite alternate; }
+  @keyframes speakPulse { from { transform: scale(1); } to { transform: scale(1.3); } }
+
+  /* ====== LETTER REVEAL (Method 1) ====== */
+  .letters-display {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .letter-box {
+    width: 52px; height: 60px;
+    border: 3px solid #e5e7eb;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.8rem;
+    color: var(--text);
+    background: white;
+    transition: all 0.3s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .letter-box.hidden { background: #f3f4f6; color: transparent; border-color: #d1d5db; }
+  .letter-box.revealed {
+    border-color: var(--bee);
+    background: #fffbeb;
+    animation: letterPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes letterPop {
+    from { transform: scale(0.5) rotateY(90deg); }
+    to { transform: scale(1) rotateY(0); }
+  }
+
+  .method1-controls, .method2-controls, .method3-controls {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 12px 20px;
+    animation: slideUp 0.4s ease 0.3s both;
+  }
+
+  .ctrl-btn {
+    padding: 12px 22px;
+    border: none;
+    border-radius: 14px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .ctrl-btn:hover { transform: scale(1.05); }
+  .ctrl-btn.primary { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; box-shadow: 0 4px 15px rgba(99,102,241,0.3); }
+  .ctrl-btn.success { background: linear-gradient(135deg, #4ade80, #16a34a); color: white; }
+  .ctrl-btn.danger { background: linear-gradient(135deg, #f87171, #dc2626); color: white; }
+  .ctrl-btn.warning { background: linear-gradient(135deg, #fbbf24, #d97706); color: white; }
+  .ctrl-btn.neutral { background: #f3f4f6; color: #374151; }
+
+  /* ====== METHOD 2: PHONICS ====== */
+  .phonics-display {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    padding: 12px;
+  }
+
+  .phoneme-chip {
+    padding: 10px 16px;
+    border-radius: 14px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    animation: popIn 0.3s ease backwards;
+    border: 3px solid transparent;
+  }
+
+  .phoneme-chip:nth-child(odd)  { background: #ede9fe; color: #7c3aed; border-color: #c4b5fd; }
+  .phoneme-chip:nth-child(even) { background: #fef3c7; color: #b45309; border-color: #fcd34d; }
+  .phoneme-chip:hover { transform: scale(1.1) translateY(-4px); }
+  .phoneme-chip.active-chip { transform: scale(1.15); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+
+  .phonics-hint {
+    background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+    border-radius: 16px;
+    padding: 14px 20px;
+    margin: 8px 20px;
+    font-size: 0.95rem;
+    color: #5b21b6;
+    font-weight: 700;
+    text-align: center;
+    border: 2px solid #c4b5fd;
+  }
+
+  /* ====== METHOD 3: SPELLING BEE ====== */
+  .bee-stage {
+    background: linear-gradient(135deg, #1e1b4b, #312e81);
+    border-radius: 24px;
+    margin: 16px;
+    padding: 24px;
+    text-align: center;
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .bee-stage::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(251,191,36,0.1) 0%, transparent 60%);
+    animation: stageGlow 3s ease-in-out infinite;
+  }
+
+  @keyframes stageGlow {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.1); opacity: 1; }
+  }
+
+  .stage-prompt {
+    font-size: 1.1rem;
+    color: #a5b4fc;
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+
+  .stage-word {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2.5rem, 10vw, 4rem);
+    color: var(--bee);
+    text-shadow: 0 0 30px rgba(251,191,36,0.5);
+    position: relative; z-index: 1;
+  }
+
+  .stage-hidden {
+    font-size: 2rem;
+    letter-spacing: 12px;
+    color: #6366f1;
+  }
+
+  .spell-input-wrap {
+    display: flex;
+    gap: 10px;
+    padding: 16px 20px;
+    align-items: center;
+  }
+
+  .spell-input {
+    flex: 1;
+    padding: 14px 18px;
+    border: 3px solid #e5e7eb;
+    border-radius: 16px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.4rem;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+    letter-spacing: 2px;
+    text-transform: lowercase;
+  }
+
+  .spell-input:focus { border-color: #6366f1; }
+  .spell-input.correct-input { border-color: #4ade80; background: #f0fdf4; }
+  .spell-input.wrong-input { border-color: #f87171; background: #fef2f2; animation: shake 0.4s; }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+
+  .submit-btn {
+    padding: 14px 20px;
+    border: none;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 15px rgba(99,102,241,0.3);
+  }
+  .submit-btn:hover { transform: scale(1.05); }
+
+  /* Feedback */
+  .feedback-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s;
+    backdrop-filter: blur(4px);
+  }
+
+  .feedback-overlay.show { opacity: 1; pointer-events: all; }
+
+  .feedback-box {
+    background: white;
+    border-radius: 28px;
+    padding: 40px;
+    text-align: center;
+    max-width: 340px;
+    width: 90%;
+    animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.3);
+  }
+
+  .feedback-emoji { font-size: 5rem; display: block; margin-bottom: 12px; }
+  .feedback-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    margin-bottom: 8px;
+  }
+  .feedback-title.correct-title { color: #16a34a; }
+  .feedback-title.wrong-title { color: #dc2626; }
+  .feedback-text { color: #6b7280; font-size: 1rem; font-weight: 600; margin-bottom: 20px; }
+  .feedback-correct-word {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5rem;
+    color: var(--text);
+    background: #f9fafb;
+    padding: 10px 24px;
+    border-radius: 16px;
+    margin-bottom: 16px;
+    letter-spacing: 2px;
+  }
+
+  /* ====== SCORE & NAVIGATION ====== */
+  .nav-btns {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    border-top: 2px solid #f3f4f6;
+    background: white;
+    position: sticky;
+    bottom: 0;
+  }
+
+  .score-display {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.1rem;
+    color: var(--bee-dark);
+  }
+
+  /* ====== STARS ====== */
+  .stars {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    margin: 12px 0;
+  }
+
+  .star {
+    font-size: 2rem;
+    opacity: 0.3;
+    transition: all 0.3s;
+  }
+
+  .star.lit {
+    opacity: 1;
+    animation: starPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes starPop {
+    from { transform: scale(0) rotate(-30deg); }
+    to { transform: scale(1) rotate(0); }
+  }
+
+  /* ====== CONFETTI ====== */
+  .confetti-piece {
+    position: fixed;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    pointer-events: none;
+    z-index: 999;
+    animation: confettiFall linear forwards;
+  }
+
+  @keyframes confettiFall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ====== COMPLETION SCREEN ====== */
+  .completion-screen {
+    background: linear-gradient(135deg, #1e1b4b, #312e81, #4f46e5);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 30px 20px;
+    color: white;
+  }
+
+  .completion-trophy { font-size: 8rem; display: block; animation: beeBounce 2s ease-in-out infinite; }
+  .completion-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 3rem;
+    color: var(--bee);
+    text-shadow: 0 0 40px rgba(251,191,36,0.6);
+    margin: 20px 0 10px;
+  }
+  .completion-score {
+    font-size: 1.3rem;
+    color: #a5b4fc;
+    font-weight: 700;
+    margin-bottom: 30px;
+  }
+
+  /* ====== MISC ====== */
+  .section-label {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 6px 14px;
+    border-radius: 50px;
+    display: inline-block;
+    margin-bottom: 8px;
+  }
+
+  .tip-box {
+    background: linear-gradient(135deg, #fef9c3, #fef3c7);
+    border: 2px dashed #fbbf24;
+    border-radius: 16px;
+    padding: 14px 18px;
+    margin: 0 20px;
+    font-size: 0.9rem;
+    color: #92400e;
+    font-weight: 600;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .m1-hidden-area {
+    position: relative;
+    width: 100%;
+  }
+
+  .reveal-layer {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #f3f4f6;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  /* Word list mini */
+  .word-nav-strip {
+    display: flex;
+    gap: 6px;
+    padding: 10px 20px;
+    overflow-x: auto;
+    border-top: 2px solid #f3f4f6;
+    scrollbar-width: none;
+  }
+  .word-nav-strip::-webkit-scrollbar { display: none; }
+
+  .word-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: #e5e7eb;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .word-dot.done { background: #4ade80; }
+  .word-dot.current { background: var(--bee-dark); transform: scale(1.4); }
+  .word-dot.wrong { background: #f87171; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+  ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+
+  /* Countdown bar */
+  .countdown-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 20px 8px;
+    min-height: 28px;
+  }
+  .countdown-track {
+    flex: 1;
+    height: 10px;
+    background: #f3f4f6;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .countdown-fill {
+    height: 100%;
+    border-radius: 8px;
+    transition: width 0.9s linear, background 0.5s;
+  }
+  .countdown-label {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    color: #6b7280;
+    min-width: 28px;
+    text-align: right;
+  }
+
+  .transcript-box {
+    background: #1e1b4b;
+    border-radius: 12px;
+    padding: 10px 16px;
+    margin: 0 20px 4px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    color: #a5b4fc;
+    text-align: center;
+    min-height: 36px;
+    letter-spacing: 1px;
+    border: 2px solid #4f46e5;
+  }
+
+  .perm-help {
+    background: #fef9c3;
+    border: 2px solid #fcd34d;
+    border-radius: 14px;
+    padding: 12px 16px;
+    margin: 0 20px;
+    font-size: 0.88rem;
+    color: #78350f;
+    line-height: 1.7;
+    text-align: left;
+  }
+
+  /* ====== VOICE / MIC UI ====== */
+  .voice-letters-wrap {
+    padding: 12px 20px 4px;
+    text-align: center;
+  }
+
+  .voice-letters {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 7px;
+    min-height: 64px;
+    align-items: center;
+  }
+
+  .v-letter {
+    width: 50px; height: 58px;
+    border: 3px solid #e5e7eb;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.7rem;
+    background: #f9fafb;
+    color: #d1d5db;
+    transition: all 0.3s;
+    position: relative;
+  }
+
+  .v-letter.filled {
+    border-color: #6366f1;
+    background: #ede9fe;
+    color: #4f46e5;
+    animation: letterPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .v-letter.correct-letter {
+    border-color: #4ade80;
+    background: #dcfce7;
+    color: #15803d;
+    animation: letterPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .v-letter.wrong-letter {
+    border-color: #f87171;
+    background: #fee2e2;
+    color: #dc2626;
+  }
+
+  .voice-status {
+    font-size: 0.95rem;
+    color: #9ca3af;
+    font-weight: 700;
+    margin-top: 10px;
+    min-height: 22px;
+    transition: color 0.3s;
+  }
+
+  .voice-status.listening {
+    color: #6366f1;
+  }
+
+  /* Sound wave */
+  .soundwave {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    height: 40px;
+    margin: 4px 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .soundwave.active { opacity: 1; }
+
+  .wave-bar {
+    width: 5px;
+    border-radius: 3px;
+    background: linear-gradient(180deg, #6366f1, #a78bfa);
+    animation: waveAnim 0.8s ease-in-out infinite;
+  }
+
+  .wave-bar:nth-child(1) { height: 10px; animation-delay: 0s; }
+  .wave-bar:nth-child(2) { height: 20px; animation-delay: 0.1s; }
+  .wave-bar:nth-child(3) { height: 30px; animation-delay: 0.2s; }
+  .wave-bar:nth-child(4) { height: 40px; animation-delay: 0.3s; }
+  .wave-bar:nth-child(5) { height: 30px; animation-delay: 0.4s; }
+  .wave-bar:nth-child(6) { height: 40px; animation-delay: 0.25s; }
+  .wave-bar:nth-child(7) { height: 30px; animation-delay: 0.15s; }
+  .wave-bar:nth-child(8) { height: 20px; animation-delay: 0.05s; }
+  .wave-bar:nth-child(9) { height: 10px; animation-delay: 0s; }
+
+  @keyframes waveAnim {
+    0%, 100% { transform: scaleY(0.4); opacity: 0.5; }
+    50%       { transform: scaleY(1);   opacity: 1; }
+  }
+
+  /* Mic button */
+  .mic-controls {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 20px 14px;
+  }
+
+  .mic-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 110px; height: 110px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    box-shadow: 0 8px 30px rgba(99,102,241,0.4), 0 0 0 0 rgba(99,102,241,0.3);
+    cursor: pointer;
+    transition: all 0.3s;
+    color: white;
+  }
+
+  .mic-btn:hover { transform: scale(1.06); }
+  .mic-btn:active { transform: scale(0.97); }
+
+  .mic-btn.recording {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    box-shadow: 0 8px 30px rgba(239,68,68,0.5), 0 0 0 12px rgba(239,68,68,0.15);
+    animation: micPulse 1.2s ease-in-out infinite;
+  }
+
+  @keyframes micPulse {
+    0%, 100% { box-shadow: 0 8px 30px rgba(239,68,68,0.5), 0 0 0 8px rgba(239,68,68,0.15); }
+    50%       { box-shadow: 0 8px 30px rgba(239,68,68,0.6), 0 0 0 20px rgba(239,68,68,0.08); }
+  }
+
+  .mic-icon { font-size: 2.4rem; line-height: 1; }
+  .mic-label { font-family: 'Fredoka One', cursive; font-size: 0.85rem; }
+
+  .retry-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #fbbf24, #d97706);
+    box-shadow: 0 6px 20px rgba(251,191,36,0.4);
+    cursor: pointer;
+    color: white;
+    font-family: 'Fredoka One', cursive;
+    font-size: 0.8rem;
+    transition: all 0.3s;
+  }
+
+  .retry-btn span:first-child { font-size: 1.8rem; }
+  .retry-btn:hover { transform: scale(1.08); }
+  .retry-btn:active { transform: scale(0.96); }
+
+  /* No mic message */
+  .no-mic-msg {
+    background: #fef3c7;
+    border: 2px solid #fcd34d;
+    border-radius: 14px;
+    padding: 12px 18px;
+    margin: 0 20px;
+    font-size: 0.9rem;
+    color: #92400e;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  @media (max-width: 480px) {
+    .methods-grid { grid-template-columns: 1fr; }
+    .method-card { padding: 20px; }
+    .word-emoji-box { width: 130px; height: 130px; font-size: 5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Floating decorations -->
+<div class="floater" style="left:5%; animation-duration:8s; animation-delay:0s; font-size:1.5rem;">🌟</div>
+<div class="floater" style="left:20%; animation-duration:11s; animation-delay:2s;">⭐</div>
+<div class="floater" style="left:40%; animation-duration:9s; animation-delay:4s; font-size:1.8rem;">🎀</div>
+<div class="floater" style="left:60%; animation-duration:13s; animation-delay:1s;">🌸</div>
+<div class="floater" style="left:75%; animation-duration:7s; animation-delay:3s; font-size:1.3rem;">💫</div>
+<div class="floater" style="left:90%; animation-duration:10s; animation-delay:5s;">🦋</div>
+
+<!-- ============================= HOME ============================= -->
+<div id="home" class="screen active">
+  <div class="home-header">
+    <span class="bee-mascot">🐝</span>
+    <h1 class="home-title">Spelling Bee</h1>
+    <p class="home-subtitle">¡Aprende inglés con diversión! 🎉</p>
+  </div>
+
+  <div class="methods-grid">
+    <!-- Method 1: MIRA-DI-CUBRE-ESCRIBE -->
+    <div class="method-card" onclick="startMethod(1)">
+      <span class="method-emoji">👀</span>
+      <span class="method-badge badge-easy">⭐ Nivel Fácil</span>
+      <h2 class="method-name">Mira · Di · Cubre</h2>
+      <p class="method-desc">¡El método favorito de los expertos! Mira la palabra, pronúnciala, ocúltala y escríbela de memoria.</p>
+      <ul class="method-steps">
+        <li><span class="step-num">1</span>👀 Mira la imagen y la palabra</li>
+        <li><span class="step-num">2</span>🔊 Escucha cómo suena</li>
+        <li><span class="step-num">3</span>🙈 ¡Cúbrela! Escríbela de memoria</li>
+        <li><span class="step-num">4</span>✅ Revela y verifica</li>
+      </ul>
+      <button class="start-btn">¡Empezar! 🚀</button>
+      <p class="words-count">📝 78 palabras · 3 niveles de dificultad</p>
+    </div>
+
+    <!-- Method 2: FONÉTICA -->
+    <div class="method-card" onclick="startMethod(2)">
+      <span class="method-emoji">🎵</span>
+      <span class="method-badge badge-medium">⭐⭐ Nivel Medio</span>
+      <h2 class="method-name">Fonética Musical</h2>
+      <p class="method-desc">¡Divide la palabra en sonidos! Cada pedacito es una nota musical. ¡Canta mientras deletreas!</p>
+      <ul class="method-steps">
+        <li><span class="step-num">1</span>🎵 Escucha la pronunciación</li>
+        <li><span class="step-num">2</span>🧩 Toca cada pedazo del sonido</li>
+        <li><span class="step-num">3</span>✍️ Deletrea letra por letra</li>
+        <li><span class="step-num">4</span>🎤 ¡Canta las letras!</li>
+      </ul>
+      <button class="start-btn">¡Empezar! 🎵</button>
+      <p class="words-count">📝 78 palabras · 3 niveles de dificultad</p>
+    </div>
+
+    <!-- Method 3: CONCURSO BEE -->
+    <div class="method-card" onclick="startMethod(3)">
+      <span class="method-emoji">🏆</span>
+      <span class="method-badge badge-hard">⭐⭐⭐ Nivel Difícil</span>
+      <h2 class="method-name">¡Concurso Bee!</h2>
+      <p class="method-desc">¡Simula un concurso real de Spelling Bee! Escucha la palabra, escríbela y gana puntos.</p>
+      <ul class="method-steps">
+        <li><span class="step-num">1</span>🔊 Escucha la palabra</li>
+        <li><span class="step-num">2</span>⌨️ Escríbela correctamente</li>
+        <li><span class="step-num">3</span>🏆 ¡Suma puntos!</li>
+        <li><span class="step-num">4</span>🌟 ¡Sé la campeona!</li>
+      </ul>
+      <button class="start-btn">¡Empezar! 🏆</button>
+      <p class="words-count">📝 78 palabras · 3 niveles de dificultad</p>
+    </div>
+  </div>
+
+  <p style="color:#9ca3af; font-size:0.85rem; padding:10px; text-align:center; font-weight:700;">
+    🐝 Total: 78 palabras · 3 métodos científicos de aprendizaje
+  </p>
+</div>
+
+<!-- ============================= METHOD 1 ============================= -->
+<div id="method1" class="screen game-screen">
+  <div class="game-header">
+    <button class="back-btn" onclick="goHome()">←</button>
+    <div>
+      <div class="game-title">👀 Mira · Di · Cubre</div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="m1-progress" style="width:0%"></div>
+    </div>
+    <span class="word-counter" id="m1-counter">1/26</span>
+  </div>
+
+  <div class="diff-tabs">
+    <button class="diff-tab active-easy" id="m1-tab-easy" onclick="m1SetDiff('easy')">⭐ Fácil (26)</button>
+    <button class="diff-tab" id="m1-tab-medium" onclick="m1SetDiff('medium')">⭐⭐ Medio (26)</button>
+    <button class="diff-tab" id="m1-tab-hard" onclick="m1SetDiff('hard')">⭐⭐⭐ Difícil (26)</button>
+  </div>
+
+  <div class="word-display" id="m1-word-area">
+    <div class="word-emoji-box word-easy" id="m1-emoji">🎯</div>
+    <div class="word-text" id="m1-word-display"></div>
+    <div class="spanish-trans" id="m1-translation">📍 Traducción</div>
+    <button class="speak-btn" id="m1-speak-btn" onclick="speakWord('m1')">
+      <span class="speak-icon">🔊</span> Escuchar pronunciación
+    </button>
+  </div>
+
+  <div class="tip-box">
+    💡 <span><b>Cómo funciona:</b> Mira bien la palabra, escúchala, luego presiona <b>¡Ocultar!</b> e intenta escribirla de memoria en la hoja.</span>
+  </div>
+
+  <!-- Letters reveal section -->
+  <div class="letters-display" id="m1-letters"></div>
+
+  <div class="method1-controls">
+    <button class="ctrl-btn warning" onclick="m1HideReveal()">🙈 ¡Ocultar!</button>
+    <button class="ctrl-btn primary" onclick="m1ShowAll()">👁 Mostrar</button>
+    <button class="ctrl-btn success" onclick="m1Next()">Siguiente ➡</button>
+  </div>
+
+  <div class="nav-btns">
+    <button class="ctrl-btn neutral" onclick="m1Prev()">⬅ Anterior</button>
+    <div class="score-display">⭐ <span id="m1-score">0</span> pts</div>
+    <button class="ctrl-btn neutral" onclick="m1Next()">Siguiente ➡</button>
+  </div>
+  <div class="word-nav-strip" id="m1-nav-strip"></div>
+</div>
+
+<!-- ============================= METHOD 2 ============================= -->
+<div id="method2" class="screen game-screen">
+  <div class="game-header">
+    <button class="back-btn" onclick="goHome()">←</button>
+    <div>
+      <div class="game-title">🎵 Fonética Musical</div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="m2-progress" style="width:0%"></div>
+    </div>
+    <span class="word-counter" id="m2-counter">1/26</span>
+  </div>
+
+  <div class="diff-tabs">
+    <button class="diff-tab active-easy" id="m2-tab-easy" onclick="m2SetDiff('easy')">⭐ Fácil (26)</button>
+    <button class="diff-tab" id="m2-tab-medium" onclick="m2SetDiff('medium')">⭐⭐ Medio (26)</button>
+    <button class="diff-tab" id="m2-tab-hard" onclick="m2SetDiff('hard')">⭐⭐⭐ Difícil (26)</button>
+  </div>
+
+  <div class="word-display">
+    <div class="word-emoji-box word-easy" id="m2-emoji">🎯</div>
+    <div class="word-text" id="m2-word-display"></div>
+    <div class="spanish-trans" id="m2-translation">📍 Traducción</div>
+    <button class="speak-btn" id="m2-speak-btn" onclick="speakWord('m2')">
+      <span class="speak-icon">🔊</span> Escuchar
+    </button>
+  </div>
+
+  <div class="phonics-hint" id="m2-phonics-hint">👆 Toca cada sonido para escucharlo</div>
+
+  <div class="phonics-display" id="m2-phonics"></div>
+
+  <div class="tip-box">
+    💡 <span><b>Tip:</b> En inglés, las letras suenan diferente. Toca cada pedacito para escuchar el sonido. ¡Combínalos!</span>
+  </div>
+
+  <div class="method2-controls">
+    <button class="ctrl-btn primary" onclick="m2PlayAll()">🎵 Reproducir todo</button>
+    <button class="ctrl-btn warning" onclick="speakLetterByLetter()">🔤 Letra por letra</button>
+    <button class="ctrl-btn success" onclick="m2Next()">Siguiente ➡</button>
+  </div>
+
+  <div class="nav-btns">
+    <button class="ctrl-btn neutral" onclick="m2Prev()">⬅ Anterior</button>
+    <div class="score-display">🎵 <span id="m2-score">0</span> pts</div>
+    <button class="ctrl-btn neutral" onclick="m2Next()">Siguiente ➡</button>
+  </div>
+  <div class="word-nav-strip" id="m2-nav-strip"></div>
+</div>
+
+<!-- ============================= METHOD 3 ============================= -->
+<div id="method3" class="screen game-screen">
+  <div class="game-header">
+    <button class="back-btn" onclick="goHome()">←</button>
+    <div>
+      <div class="game-title">🏆 Concurso Bee</div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="m3-progress" style="width:0%"></div>
+    </div>
+    <span class="word-counter" id="m3-counter">1/26</span>
+  </div>
+
+  <div class="diff-tabs">
+    <button class="diff-tab active-easy" id="m3-tab-easy" onclick="m3SetDiff('easy')">⭐ Fácil (26)</button>
+    <button class="diff-tab" id="m3-tab-medium" onclick="m3SetDiff('medium')">⭐⭐ Medio (26)</button>
+    <button class="diff-tab" id="m3-tab-hard" onclick="m3SetDiff('hard')">⭐⭐⭐ Difícil (26)</button>
+  </div>
+
+  <div class="word-display" style="padding-bottom:8px;">
+    <div class="word-emoji-box word-easy" id="m3-emoji">🎯</div>
+    <div class="spanish-trans" id="m3-translation">📍 Traducción</div>
+  </div>
+
+  <div class="bee-stage">
+    <p class="stage-prompt" id="m3-stage-prompt">🎤 Escucha la palabra y ¡deletréala en voz alta!</p>
+    <div class="stage-word" id="m3-stage-word">?????</div>
+    <div class="stars" id="m3-stars">
+      <span class="star">⭐</span><span class="star">⭐</span><span class="star">⭐</span>
+    </div>
+  </div>
+
+  <!-- Letter boxes display -->
+  <div class="voice-letters-wrap" id="m3-letters-wrap">
+    <div class="voice-letters" id="m3-voice-letters"></div>
+    <div class="voice-status" id="m3-voice-status">Presiona el micrófono para deletrear</div>
+  </div>
+
+  <!-- Sound wave animation -->
+  <div class="soundwave" id="m3-soundwave">
+    <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+    <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+    <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+  </div>
+
+  <!-- Live transcript debug -->
+  <div class="transcript-box" id="m3-transcript" style="display:none"></div>
+
+  <!-- Countdown bar -->
+  <div class="countdown-wrap" id="m3-countdown-wrap">
+    <div class="countdown-track">
+      <div class="countdown-fill" id="m3-countdown-bar" style="width:0%"></div>
+    </div>
+    <span class="countdown-label" id="m3-countdown-label"></span>
+  </div>
+
+  <!-- Main mic controls -->
+  <div class="mic-controls">
+    <button class="mic-btn" id="m3-mic-btn" onclick="m3StartVoice()">
+      <span class="mic-icon">🎤</span>
+      <span class="mic-label">¡Deletrear!</span>
+    </button>
+    <button class="retry-btn" id="m3-retry-btn" onclick="m3Retry()" style="display:none">
+      <span>🔄</span>
+      <span>Otra vez</span>
+    </button>
+  </div>
+
+  <!-- Permission help box (shown when needed) -->
+  <div class="perm-help" id="m3-perm-help" style="display:none">
+    <b>⚠️ ¿Sin sonido?</b><br>
+    1. Haz clic en el 🔒 o 🎤 en la barra de tu navegador<br>
+    2. Activa el permiso de <b>Micrófono</b><br>
+    3. Recarga la página y vuelve a intentar
+  </div>
+
+  <div class="method3-controls">
+    <button class="ctrl-btn warning" onclick="speakWord('m3')">🔊 Escuchar</button>
+    <button class="ctrl-btn primary" onclick="m3Hint()">💡 Pista</button>
+    <button class="ctrl-btn neutral" onclick="m3Skip()">⏭ Saltar</button>
+  </div>
+
+  <div class="nav-btns">
+    <div class="score-display">🏆 <span id="m3-score">0</span> pts</div>
+    <div style="font-size:0.9rem; color:#9ca3af; font-weight:700;">¡Cada correcta = 10 pts!</div>
+    <div class="score-display">🔥 <span id="m3-streak">0</span> 🔥</div>
+  </div>
+  <div class="word-nav-strip" id="m3-nav-strip"></div>
+</div>
+
+<!-- Feedback Overlay -->
+<div class="feedback-overlay" id="feedback-overlay">
+  <div class="feedback-box">
+    <span class="feedback-emoji" id="fb-emoji">🎉</span>
+    <h2 class="feedback-title" id="fb-title">¡Correcto!</h2>
+    <p class="feedback-text" id="fb-text"></p>
+    <div class="feedback-correct-word" id="fb-word"></div>
+    <button class="ctrl-btn success" style="width:100%;justify-content:center;" onclick="closeFeedback()">
+      Continuar ➡
+    </button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const wordSets = {
+  easy: [
+    { word: 'ball',  emoji: '⚽', es: 'pelota' },
+    { word: 'net',   emoji: '🥅', es: 'red' },
+    { word: 'fan',   emoji: '🌀', es: 'abanico/fanático' },
+    { word: 'milk',  emoji: '🥛', es: 'leche' },
+    { word: 'egg',   emoji: '🥚', es: 'huevo' },
+    { word: 'head',  emoji: '🗣️', es: 'cabeza' },
+    { word: 'tail',  emoji: '🐾', es: 'cola' },
+    { word: 'neck',  emoji: '🦒', es: 'cuello' },
+    { word: 'legs',  emoji: '🦵', es: 'piernas' },
+    { word: 'pig',   emoji: '🐷', es: 'cerdo' },
+    { word: 'pen',   emoji: '✏️', es: 'pluma' },
+    { word: 'nap',   emoji: '😴', es: 'siesta' },
+    { word: 'hot',   emoji: '🔥', es: 'caliente' },
+    { word: 'ten',   emoji: '🔟', es: 'diez' },
+    { word: 'ear',   emoji: '👂', es: 'oreja' },
+    { word: 'eye',   emoji: '👁️', es: 'ojo' },
+    { word: 'face',  emoji: '😊', es: 'cara' },
+    { word: 'nose',  emoji: '👃', es: 'nariz' },
+    { word: 'fish',  emoji: '🐟', es: 'pez' },
+    { word: 'dad',   emoji: '👨', es: 'papá' },
+    { word: 'cat',   emoji: '🐱', es: 'gato' },
+    { word: 'fun',   emoji: '🎉', es: 'diversión' },
+    { word: 'run',   emoji: '🏃', es: 'correr' },
+    { word: 'fly',   emoji: '🦋', es: 'volar' },
+    { word: 'six',   emoji: '6️⃣', es: 'seis' },
+    { word: 'fast',  emoji: '⚡', es: 'rápido' },
+  ],
+  medium: [
+    { word: 'hockey',  emoji: '🏒', es: 'hockey' },
+    { word: 'soccer',  emoji: '⚽', es: 'fútbol' },
+    { word: 'soccer',  emoji: '⚽', es: 'fútbol' },
+    { word: 'boxing',  emoji: '🥊', es: 'boxeo' },
+    { word: 'coach',   emoji: '🧑‍🏫', es: 'entrenador' },
+    { word: 'player',  emoji: '🏅', es: 'jugador' },
+    { word: 'apple',   emoji: '🍎', es: 'manzana' },
+    { word: 'banana',  emoji: '🍌', es: 'plátano' },
+    { word: 'grapes',  emoji: '🍇', es: 'uvas' },
+    { word: 'carrot',  emoji: '🥕', es: 'zanahoria' },
+    { word: 'tomato',  emoji: '🍅', es: 'tomate' },
+    { word: 'pepper',  emoji: '🌶️', es: 'pimiento' },
+    { word: 'butter',  emoji: '🧈', es: 'mantequilla' },
+    { word: 'honey',   emoji: '🍯', es: 'miel' },
+    { word: 'coffee',  emoji: '☕', es: 'café' },
+    { word: 'horns',   emoji: '🎺', es: 'cuernos' },
+    { word: 'spike',   emoji: '📌', es: 'clavo/punta' },
+    { word: 'wings',   emoji: '🦅', es: 'alas' },
+    { word: 'teeth',   emoji: '🦷', es: 'dientes' },
+    { word: 'mouth',   emoji: '👄', es: 'boca' },
+    { word: 'mother',  emoji: '👩', es: 'mamá' },
+    { word: 'father',  emoji: '👨', es: 'papá' },
+    { word: 'sister',  emoji: '👧', es: 'hermana' },
+    { word: 'uncle',   emoji: '🧔', es: 'tío' },
+    { word: 'family',  emoji: '👨‍👩‍👧', es: 'familia' },
+    { word: 'climb',   emoji: '🧗', es: 'escalar' },
+  ],
+  hard: [
+    { word: 'baseball',     emoji: '⚾', es: 'béisbol' },
+    { word: 'fencing',      emoji: '🤺', es: 'esgrima' },
+    { word: 'karate',       emoji: '🥋', es: 'karate' },
+    { word: 'gymnastic',    emoji: '🤸', es: 'gimnasia' },
+    { word: 'swimming',     emoji: '🏊', es: 'natación' },
+    { word: 'volleyball',   emoji: '🏐', es: 'voleibol' },
+    { word: 'basketball',   emoji: '🏀', es: 'baloncesto' },
+    { word: 'referee',      emoji: '🧑‍⚖️', es: 'árbitro' },
+    { word: 'strawberry',   emoji: '🍓', es: 'fresa' },
+    { word: 'lemonade',     emoji: '🍋', es: 'limonada' },
+    { word: 'protein',      emoji: '🥩', es: 'proteína' },
+    { word: 'vitamin',      emoji: '💊', es: 'vitamina' },
+    { word: 'carbohydrate', emoji: '🍞', es: 'carbohidrato' },
+    { word: 'thermometer',  emoji: '🌡️', es: 'termómetro' },
+    { word: 'throat',       emoji: '🗣️', es: 'garganta' },
+    { word: 'stomachache',  emoji: '😣', es: 'dolor de estómago' },
+    { word: 'headache',     emoji: '🤕', es: 'dolor de cabeza' },
+    { word: 'fever',        emoji: '🤒', es: 'fiebre' },
+    { word: 'earache',      emoji: '😖', es: 'dolor de oído' },
+    { word: 'grandparents', emoji: '👴👵', es: 'abuelos' },
+    { word: 'grandmother',  emoji: '👵', es: 'abuela' },
+    { word: 'grandfather',  emoji: '👴', es: 'abuelo' },
+    { word: 'siblings',     emoji: '👦👧', es: 'hermanos' },
+    { word: 'exercise',     emoji: '💪', es: 'ejercicio' },
+    { word: 'medicine',     emoji: '💉', es: 'medicina' },
+    { word: 'tissues',      emoji: '🧻', es: 'pañuelos' },
+  ]
+};
+
+// Phoneme breakdowns for each word
+const phonemes = {
+  // easy
+  ball:   ['b','all'],
+  net:    ['n','e','t'],
+  fan:    ['f','a','n'],
+  milk:   ['m','il','k'],
+  egg:    ['e','gg'],
+  head:   ['h','ea','d'],
+  tail:   ['t','ai','l'],
+  neck:   ['n','e','ck'],
+  legs:   ['l','e','gs'],
+  pig:    ['p','i','g'],
+  pen:    ['p','e','n'],
+  nap:    ['n','a','p'],
+  hot:    ['h','o','t'],
+  ten:    ['t','e','n'],
+  ear:    ['ear'],
+  eye:    ['eye'],
+  face:   ['f','a','ce'],
+  nose:   ['n','o','se'],
+  fish:   ['f','i','sh'],
+  dad:    ['d','a','d'],
+  cat:    ['c','a','t'],
+  fun:    ['f','u','n'],
+  run:    ['r','u','n'],
+  fly:    ['fl','y'],
+  six:    ['s','i','x'],
+  fast:   ['f','a','st'],
+  // medium
+  hockey:  ['hoc','key'],
+  soccer:  ['soc','cer'],
+  boxing:  ['box','ing'],
+  coach:   ['co','ach'],
+  player:  ['play','er'],
+  apple:   ['ap','ple'],
+  banana:  ['ba','na','na'],
+  grapes:  ['gr','apes'],
+  carrot:  ['car','rot'],
+  tomato:  ['to','ma','to'],
+  pepper:  ['pep','per'],
+  butter:  ['but','ter'],
+  honey:   ['hon','ey'],
+  coffee:  ['cof','fee'],
+  horns:   ['h','orns'],
+  spike:   ['sp','ike'],
+  wings:   ['w','ings'],
+  teeth:   ['t','eeth'],
+  mouth:   ['m','outh'],
+  mother:  ['mo','ther'],
+  father:  ['fa','ther'],
+  sister:  ['sis','ter'],
+  uncle:   ['un','cle'],
+  family:  ['fam','i','ly'],
+  climb:   ['cl','imb'],
+  // hard
+  baseball:     ['base','ball'],
+  fencing:      ['fen','cing'],
+  karate:       ['ka','ra','te'],
+  gymnastic:    ['gym','nas','tic'],
+  swimming:     ['swim','ming'],
+  volleyball:   ['vol','ley','ball'],
+  basketball:   ['bas','ket','ball'],
+  referee:      ['ref','er','ee'],
+  strawberry:   ['straw','ber','ry'],
+  lemonade:     ['lem','on','ade'],
+  protein:      ['pro','tein'],
+  vitamin:      ['vi','ta','min'],
+  carbohydrate: ['car','bo','hy','drate'],
+  thermometer:  ['ther','mom','e','ter'],
+  throat:       ['thr','oat'],
+  stomachache:  ['stom','ach','ache'],
+  headache:     ['head','ache'],
+  fever:        ['fe','ver'],
+  earache:      ['ear','ache'],
+  grandparents: ['grand','par','ents'],
+  grandmother:  ['grand','moth','er'],
+  grandfather:  ['grand','fa','ther'],
+  siblings:     ['sib','lings'],
+  exercise:     ['ex','er','cise'],
+  medicine:     ['med','i','cine'],
+  tissues:      ['tis','sues'],
+};
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  method: 1,
+  diff: 'easy',
+  idx: 0,
+  score: 0,
+  streak: 0,
+  revealed: false,
+  hintCount: 0,
+  wordStatus: {
+    1: { easy: new Array(26).fill('pending'), medium: new Array(26).fill('pending'), hard: new Array(26).fill('pending') },
+    2: { easy: new Array(26).fill('pending'), medium: new Array(26).fill('pending'), hard: new Array(26).fill('pending') },
+    3: { easy: new Array(26).fill('pending'), medium: new Array(26).fill('pending'), hard: new Array(26).fill('pending') },
+  }
+};
+
+let currentMethod = 1;
+
+function getCurStatus() { return state.wordStatus[currentMethod][state.diff]; }
+
+// ============================================================
+// SPEECH
+// ============================================================
+function speak(text, onEnd) {
+  if (!window.speechSynthesis) { if(onEnd) onEnd(); return; }
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-US';
+  u.rate = 0.8;
+  u.pitch = 1.1;
+  u.volume = 1;
+  if (onEnd) u.onend = onEnd;
+  const voices = speechSynthesis.getVoices();
+  const engVoice = voices.find(v => v.lang.startsWith('en') && v.name.includes('Female'))
+    || voices.find(v => v.lang.startsWith('en-US'))
+    || voices.find(v => v.lang.startsWith('en'));
+  if (engVoice) u.voice = engVoice;
+  speechSynthesis.speak(u);
+}
+
+function speakWord(methodId) {
+  const ws = getWordSet();
+  const word = ws[state.idx].word;
+  const btn = document.getElementById(methodId + '-speak-btn');
+  if (btn) {
+    btn.classList.add('speaking');
+    speak(word, () => btn.classList.remove('speaking'));
+  } else {
+    speak(word);
+  }
+}
+
+function speakLetterByLetter() {
+  const ws = getWordSet();
+  const word = ws[state.idx].word;
+  let i = 0;
+  function next() {
+    if (i < word.length) {
+      speak(word[i], () => { i++; setTimeout(next, 400); });
+    } else {
+      setTimeout(() => speak(word), 500);
+    }
+  }
+  next();
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function goHome() {
+  speechSynthesis.cancel();
+  showScreen('home');
+}
+
+function getWordSet() {
+  return wordSets[state.diff];
+}
+
+function updateDiffTabs(prefix, activeDiff) {
+  ['easy','medium','hard'].forEach(d => {
+    const tab = document.getElementById(prefix + '-tab-' + d);
+    if (!tab) return;
+    tab.className = d === activeDiff ? 'diff-tab active-' + d : 'diff-tab';
+  });
+  const emojiBox = document.getElementById(prefix + '-emoji');
+  if (emojiBox) emojiBox.className = 'word-emoji-box word-' + activeDiff;
+}
+
+async function startMethod(m) {
+  currentMethod = m;
+  state.score = 0;
+  state.idx = 0;
+  state.streak = 0;
+  state.hintCount = 0;
+  state.diff = 'easy';
+  if (m === 1) {
+    showScreen('method1');
+    updateDiffTabs('m1', 'easy');
+    m1Render();
+  } else if (m === 2) {
+    showScreen('method2');
+    updateDiffTabs('m2', 'easy');
+    m2Render();
+  } else {
+    showScreen('method3');
+    updateDiffTabs('m3', 'easy');
+    m3Render();
+    // Request mic permission ONCE when entering Method 3
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SR && !micPermGranted) {
+      const ok = await m3AcquireMicPermission();
+      if (ok) m3SetStatus('✅ Micrófono listo. Presiona 🎤 para deletrear', '');
+    }
+  }
+}
+
+function updateNavStrip(id) {
+  const strip = document.getElementById(id);
+  if (!strip) return;
+  const ws = getWordSet();
+  const status = getCurStatus();
+  strip.innerHTML = ws.map((_, i) => {
+    let cls = 'word-dot';
+    if (i === state.idx) cls += ' current';
+    else if (status[i] === 'correct') cls += ' done';
+    else if (status[i] === 'wrong') cls += ' wrong';
+    return `<div class="${cls}" onclick="jumpTo(${i})"></div>`;
+  }).join('');
+}
+
+function jumpTo(i) {
+  state.idx = i;
+  if (currentMethod === 1) m1Render();
+  else if (currentMethod === 2) m2Render();
+  else m3Render();
+}
+
+// ============================================================
+// METHOD 1: Mira · Di · Cubre
+// ============================================================
+function m1SetDiff(diff) {
+  state.diff = diff;
+  state.idx = 0;
+  state.revealed = true;
+  updateDiffTabs('m1', diff);
+  m1Render();
+}
+
+function m1Render() {
+  const ws = getWordSet();
+  const w = ws[state.idx];
+  state.revealed = true;
+
+  document.getElementById('m1-word-display').textContent = w.word;
+  document.getElementById('m1-translation').textContent = '🇲🇽 ' + w.es;
+  document.getElementById('m1-emoji').textContent = w.emoji;
+  document.getElementById('m1-counter').textContent = (state.idx+1) + '/' + ws.length;
+  document.getElementById('m1-progress').style.width = ((state.idx+1)/ws.length*100) + '%';
+  document.getElementById('m1-score').textContent = state.score;
+
+  // Letter boxes
+  const letters = document.getElementById('m1-letters');
+  letters.innerHTML = w.word.split('').map((l, i) => 
+    `<div class="letter-box revealed" id="lb-${i}" onclick="m1ToggleLetter(${i})">${l.toUpperCase()}</div>`
+  ).join('');
+
+  updateNavStrip('m1-nav-strip');
+  setTimeout(() => speak(w.word), 400);
+}
+
+function m1ToggleLetter(i) {
+  const box = document.getElementById('lb-' + i);
+  box.classList.toggle('hidden');
+  box.classList.toggle('revealed');
+}
+
+function m1HideReveal() {
+  const ws = getWordSet();
+  const w = ws[state.idx];
+  state.revealed = !state.revealed;
+  const wordEl = document.getElementById('m1-word-display');
+  
+  if (!state.revealed) {
+    wordEl.textContent = '_'.repeat(w.word.length);
+    w.word.split('').forEach((_, i) => {
+      const box = document.getElementById('lb-' + i);
+      if (box) box.classList.add('hidden');
+    });
+    speak('Can you spell it?');
+  } else {
+    m1ShowAll();
+  }
+}
+
+function m1ShowAll() {
+  const ws = getWordSet();
+  const w = ws[state.idx];
+  state.revealed = true;
+  document.getElementById('m1-word-display').textContent = w.word;
+  w.word.split('').forEach((l, i) => {
+    const box = document.getElementById('lb-' + i);
+    if (box) {
+      box.textContent = l.toUpperCase();
+      box.classList.remove('hidden');
+      box.classList.add('revealed');
+    }
+  });
+  state.score += 2;
+  document.getElementById('m1-score').textContent = state.score;
+}
+
+function m1Next() {
+  const ws = getWordSet();
+  getCurStatus()[state.idx] = 'correct';
+  state.score += 5;
+  if (state.idx < ws.length - 1) {
+    state.idx++;
+    m1Render();
+  } else {
+    showCompletion();
+  }
+}
+
+function m1Prev() {
+  if (state.idx > 0) {
+    state.idx--;
+    m1Render();
+  }
+}
+
+// ============================================================
+// METHOD 2: Fonética Musical
+// ============================================================
+function m2SetDiff(diff) {
+  state.diff = diff;
+  state.idx = 0;
+  updateDiffTabs('m2', diff);
+  m2Render();
+}
+
+function m2Render() {
+  const ws = getWordSet();
+  const w = ws[state.idx];
+  const wPhon = phonemes[w.word] || w.word.split('');
+
+  document.getElementById('m2-word-display').textContent = w.word;
+  document.getElementById('m2-translation').textContent = '🇲🇽 ' + w.es;
+  document.getElementById('m2-emoji').textContent = w.emoji;
+  document.getElementById('m2-counter').textContent = (state.idx+1) + '/' + ws.length;
+  document.getElementById('m2-progress').style.width = ((state.idx+1)/ws.length*100) + '%';
+  document.getElementById('m2-score').textContent = state.score;
+
+  const phEl = document.getElementById('m2-phonics');
+  phEl.innerHTML = wPhon.map((p, i) => 
+    `<div class="phoneme-chip" style="animation-delay:${i*0.1}s" onclick="m2SpeakPhoneme('${p}', ${i})">${p}</div>`
+  ).join('');
+
+  document.getElementById('m2-phonics-hint').textContent = `🔤 ${wPhon.length} sonidos: toca cada uno`;
+  updateNavStrip('m2-nav-strip');
+  setTimeout(() => speak(w.word), 400);
+}
+
+function m2SpeakPhoneme(ph, idx) {
+  const chips = document.querySelectorAll('.phoneme-chip');
+  chips.forEach(c => c.classList.remove('active-chip'));
+  chips[idx].classList.add('active-chip');
+  speak(ph, () => chips[idx].classList.remove('active-chip'));
+}
+
+function m2PlayAll() {
+  const ws = getWordSet();
+  const w = ws[state.idx];
+  const wPhon = phonemes[w.word] || w.word.split('');
+  let i = 0;
+  function next() {
+    if (i < wPhon.length) {
+      const chips = document.querySelectorAll('.phoneme-chip');
+      chips.forEach(c => c.classList.remove('active-chip'));
+      if (chips[i]) chips[i].classList.add('active-chip');
+      speak(wPhon[i], () => { 
+        if (chips[i]) chips[i].classList.remove('active-chip');
+        i++; setTimeout(next, 200); 
+      });
+    } else {
+      setTimeout(() => speak(w.word), 300);
+    }
+  }
+  next();
+  state.score += 3;
+  document.getElementById('m2-score').textContent = state.score;
+}
+
+function m2Next() {
+  const ws = getWordSet();
+  getCurStatus()[state.idx] = 'correct';
+  state.score += 5;
+  if (state.idx < ws.length - 1) {
+    state.idx++;
+    m2Render();
+  } else {
+    showCompletion();
+  }
+}
+
+function m2Prev() {
+  if (state.idx > 0) {
+    state.idx--;
+    m2Render();
+  }
+}
+
+// ============================================================
+// METHOD 3: Spelling Bee VOICE Competition
+// (Powered by Claude AI for accurate letter recognition)
+// ============================================================
+let recognition      = null;
+let m3IsRecording    = false;
+let m3RawTranscripts = [];   // accumulate ALL raw transcript chunks
+let m3SpelledLetters = [];   // final parsed letters after AI interpretation
+let micPermGranted   = false;
+let m3CountdownTimer = null;
+let m3CountdownSecs  = 0;
+const M3_TOTAL_SECS  = 25;   // generous time to spell longer words
+
+// ─────────────────────────────────────────────────────────────
+// STEP 1: Mic permission (once per session)
+// ─────────────────────────────────────────────────────────────
+async function m3AcquireMicPermission() {
+  if (micPermGranted) return true;
+  m3SetStatus('🔐 Solicitando permiso de micrófono...', 'listening');
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    stream.getTracks().forEach(t => t.stop());
+    micPermGranted = true;
+    return true;
+  } catch (err) {
+    micPermGranted = false;
+    const msg = err.name === 'NotAllowedError'
+      ? '🚫 Permiso denegado. Haz clic en 🔒 en tu navegador y permite el micrófono.'
+      : err.name === 'NotFoundError'
+        ? '❌ No se encontró micrófono en este dispositivo.'
+        : '❌ Error: ' + err.message;
+    m3SetStatus(msg, 'error');
+    document.getElementById('m3-perm-help').style.display = 'block';
+    return false;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// STEP 2: Build continuous SpeechRecognition session
+// ─────────────────────────────────────────────────────────────
+function buildRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return null;
+
+  const r = new SR();
+  r.lang           = 'en-US';
+  r.continuous     = true;   // keep mic open across pauses between letters
+  r.interimResults = true;
+  r.maxAlternatives = 1;
+
+  r.onstart = () => {
+    document.getElementById('m3-soundwave').classList.add('active');
+  };
+
+  r.onresult = (event) => {
+    // Collect all final + interim transcript text
+    let fullText = '';
+    for (let i = 0; i < event.results.length; i++) {
+      fullText += event.results[i][0].transcript + ' ';
+    }
+    fullText = fullText.trim();
+
+    // Show live raw transcript so user can see what mic hears
+    const tx = document.getElementById('m3-transcript');
+    tx.style.display = 'block';
+    tx.textContent = '🎙 "' + fullText + '"';
+
+    // Store latest full transcript
+    m3RawTranscripts = [fullText];
+  };
+
+  r.onerror = (ev) => {
+    // no-speech = pause between letters — restart silently, do NOT stop
+    if (ev.error === 'no-speech' && m3IsRecording) {
+      m3RestartRecognition();
+      return;
+    }
+    const msgs = {
+      'not-allowed'        : '🚫 Micrófono bloqueado. Permite el acceso en tu navegador.',
+      'audio-capture'      : '❌ No se pudo capturar audio. Verifica tu micrófono.',
+      'network'            : '🌐 Error de red con el servicio de voz.',
+      'service-not-allowed': '🚫 Usa Chrome o Edge para reconocimiento de voz.',
+      'aborted'            : null,
+    };
+    const msg = msgs[ev.error];
+    if (msg) {
+      m3SetStatus(msg, 'error');
+      if (ev.error === 'not-allowed') document.getElementById('m3-perm-help').style.display = 'block';
+      m3StopVoice(false);
+    }
+  };
+
+  r.onend = () => {
+    // Browser ended session (happens ~every 10s) — restart silently if still recording
+    if (m3IsRecording) m3RestartRecognition();
+    else document.getElementById('m3-soundwave').classList.remove('active');
+  };
+
+  return r;
+}
+
+function m3RestartRecognition() {
+  if (recognition) { try { recognition.stop(); } catch(_) {} }
+  recognition = buildRecognition();
+  if (!recognition) return;
+  try { recognition.start(); }
+  catch(e) { setTimeout(() => { if (m3IsRecording) m3RestartRecognition(); }, 250); }
+}
+
+// ─────────────────────────────────────────────────────────────
+// STEP 3: Claude AI interprets the raw transcript → letters
+// ─────────────────────────────────────────────────────────────
+async function m3InterpretWithClaude(rawTranscript, targetWord) {
+  const prompt = `You are helping an 8-year-old girl practice English spelling bee.
+
+She is spelling the word "${targetWord}" letter by letter out loud in English.
+The browser speech recognizer (not designed for spelling) captured: "${rawTranscript}"
+
+Your job: figure out exactly which letters she spelled, in order.
+
+Rules:
+- People say letter names like: "bee"=B, "see/sea"=C, "dee"=D, "ee"=E, "ef/eff"=F, "gee"=G, "aitch"=H, "eye/ai/aye"=I, "jay"=J, "kay"=K, "el/ell"=L, "em"=M, "en"=N, "oh"=O, "pee"=P, "queue/cue"=Q, "ar/are"=R, "es/ess"=S, "tee/tea"=T, "you"=U, "vee"=V, "double you/double u"=W, "ex"=X, "why/wye"=Y, "zee/zed"=Z
+- Single letters like "a", "b", "c" etc. are themselves
+- Ignore filler words: "um", "uh", "the", "letter", "and", "then", "next", "okay"
+- The speech recognizer often joins spoken letters into words (e.g. "ball" when they said "B-A-L-L") — decode these back to individual letters
+- Only return letters that were actually spoken
+
+Respond with ONLY the lowercase letters she spelled, no spaces, no punctuation, nothing else.
+Example: if rawTranscript is "be ay el el" or "ball" (recognizer joined them), respond: ball`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 30,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await resp.json();
+    const text = (data.content?.[0]?.text || '').trim().toLowerCase();
+    // Extract only lowercase letters
+    return text.replace(/[^a-z]/g, '');
+  } catch(err) {
+    console.error('Claude API error:', err);
+    return null;  // fallback to basic parsing
+  }
+}
+
+// Basic fallback parser (used only if Claude API fails)
+function m3FallbackParse(transcript) {
+  const map = {
+    'a':'a','ay':'a','b':'b','bee':'b','be':'b','c':'c','see':'c','sea':'c',
+    'd':'d','dee':'d','e':'e','ee':'e','f':'f','ef':'f','eff':'f','g':'g',
+    'gee':'g','h':'h','aitch':'h','i':'i','eye':'i','aye':'i','j':'j','jay':'j',
+    'k':'k','kay':'k','l':'l','el':'l','ell':'l','m':'m','em':'m','n':'n','en':'n',
+    'o':'o','oh':'o','p':'p','pee':'p','q':'q','queue':'q','cue':'q','r':'r',
+    'ar':'r','are':'r','s':'s','es':'s','ess':'s','t':'t','tee':'t','tea':'t',
+    'u':'u','you':'u','v':'v','vee':'v','w':'w','double you':'w','double u':'w',
+    'x':'x','ex':'x','y':'y','why':'y','wye':'y','z':'z','zee':'z','zed':'z',
+  };
+  let clean = transcript.toLowerCase()
+    .replace(/(the|and|then|next|letter|is|um|uh|okay|ok)/g, ' ')
+    .replace(/\s+/g,' ').trim();
+  const letters = [];
+  const mw = [['double you','w'],['double u','w']];
+  for (const [word, ltr] of mw) {
+    while (clean.includes(word)) {
+      const p = clean.indexOf(word);
+      clean.slice(0,p).trim().split(/\s+/).forEach(t => { if(map[t]) letters.push(map[t]); else if(t.length===1&&/[a-z]/.test(t)) letters.push(t); });
+      letters.push(ltr);
+      clean = clean.slice(p+word.length).trim();
+    }
+  }
+  clean.split(/[\s,\-.]+/).filter(Boolean).forEach(t => {
+    if (map[t]) letters.push(map[t]);
+    else if (t.length===1&&/[a-z]/.test(t)) letters.push(t);
+  });
+  return letters;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Countdown timer
+// ─────────────────────────────────────────────────────────────
+function m3StartCountdown() {
+  m3CountdownSecs = M3_TOTAL_SECS;
+  m3UpdateCountdownUI();
+  m3CountdownTimer = setInterval(() => {
+    m3CountdownSecs--;
+    m3UpdateCountdownUI();
+    if (m3CountdownSecs <= 0) m3StopVoice(true);
+  }, 1000);
+}
+
+function m3StopCountdown() {
+  if (m3CountdownTimer) { clearInterval(m3CountdownTimer); m3CountdownTimer = null; }
+  const bar   = document.getElementById('m3-countdown-bar');
+  const label = document.getElementById('m3-countdown-label');
+  if (bar)   bar.style.width = '0%';
+  if (label) label.textContent = '';
+}
+
+function m3UpdateCountdownUI() {
+  const bar   = document.getElementById('m3-countdown-bar');
+  const label = document.getElementById('m3-countdown-label');
+  if (!bar || !label) return;
+  const pct = (m3CountdownSecs / M3_TOTAL_SECS) * 100;
+  bar.style.width = pct + '%';
+  bar.style.background = m3CountdownSecs > 12
+    ? 'linear-gradient(90deg,#4ade80,#16a34a)'
+    : m3CountdownSecs > 6
+      ? 'linear-gradient(90deg,#fbbf24,#d97706)'
+      : 'linear-gradient(90deg,#f87171,#dc2626)';
+  label.textContent = m3CountdownSecs + 's';
+}
+
+// ─────────────────────────────────────────────────────────────
+// Main start / stop
+// ─────────────────────────────────────────────────────────────
+async function m3StartVoice() {
+  if (m3IsRecording) { m3StopVoice(true); return; }
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    m3SetStatus('❌ Usa Google Chrome o Edge para usar el micrófono.', 'error');
+    document.getElementById('m3-perm-help').innerHTML =
+      '<b>⚠️ Navegador incompatible</b><br>Abre esta página en <b>Google Chrome</b> o <b>Microsoft Edge</b>.';
+    document.getElementById('m3-perm-help').style.display = 'block';
+    return;
+  }
+
+  if (!micPermGranted) {
+    const ok = await m3AcquireMicPermission();
+    if (!ok) return;
+  }
+
+  // Reset
+  m3RawTranscripts = [];
+  m3SpelledLetters = [];
+  m3IsRecording    = true;
+  m3ShowLetterBoxes([], 'blank');
+  document.getElementById('m3-perm-help').style.display  = 'none';
+  document.getElementById('m3-retry-btn').style.display  = 'none';
+  document.getElementById('m3-transcript').style.display = 'none';
+  document.getElementById('m3-transcript').textContent   = '';
+  m3SetMicState('recording');
+  m3SetStatus('🎤 ¡Escuchando! Di las letras una por una en inglés...', 'listening');
+  m3StartCountdown();
+
+  recognition = buildRecognition();
+  if (!recognition) {
+    m3IsRecording = false;
+    m3StopCountdown();
+    m3SetStatus('❌ No se pudo iniciar el reconocimiento de voz.', 'error');
+    return;
+  }
+  try {
+    recognition.start();
+  } catch(e) {
+    if (e.name === 'InvalidStateError') {
+      setTimeout(() => { if (m3IsRecording) { try { recognition.start(); } catch(_) {} } }, 200);
+    } else {
+      m3IsRecording = false;
+      m3StopCountdown();
+      m3SetStatus('❌ ' + e.message, 'error');
+    }
+  }
+}
+
+async function m3StopVoice(evaluate) {
+  const wasRecording = m3IsRecording;
+  m3IsRecording = false;
+  m3StopCountdown();
+  if (recognition) { try { recognition.stop(); } catch(_) {} recognition = null; }
+  m3SetMicState('idle');
+  document.getElementById('m3-soundwave').classList.remove('active');
+
+  if (!evaluate || !wasRecording) {
+    m3SetStatus('Presiona el micrófono para deletrear', '');
+    if (m3RawTranscripts.length > 0) document.getElementById('m3-retry-btn').style.display = 'flex';
+    return;
+  }
+
+  const raw = (m3RawTranscripts[0] || '').trim();
+  if (!raw) {
+    m3SetStatus('🤔 No escuché nada. ¡Di las letras claramente en inglés!', '');
+    document.getElementById('m3-retry-btn').style.display = 'flex';
+    return;
+  }
+
+  // ── AI interpretation phase ──────────────────────────────────
+  const targetWord = getWordSet()[state.idx].word;
+  m3SetStatus('🤖 Analizando con IA...', 'listening');
+  document.getElementById('m3-mic-btn').disabled = true;
+
+  const aiResult = await m3InterpretWithClaude(raw, targetWord);
+
+  document.getElementById('m3-mic-btn').disabled = false;
+
+  let letters;
+  if (aiResult && aiResult.length > 0) {
+    letters = aiResult.split('');
+    const tx = document.getElementById('m3-transcript');
+    tx.style.display = 'block';
+    tx.textContent = '🎙 "' + raw + '"  🤖→  ' + aiResult.toUpperCase().split('').join(' · ');
+  } else {
+    // Fallback to basic parsing
+    letters = m3FallbackParse(raw);
+    const tx = document.getElementById('m3-transcript');
+    tx.style.display = 'block';
+    tx.textContent = '🎙 "' + raw + '"  →  ' + (letters.length ? letters.join(' · ').toUpperCase() : '???');
+  }
+
+  m3SpelledLetters = letters;
+  m3EvaluateSpelling();
+}
+
+// ─────────────────────────────────────────────────────────────
+// Evaluate the spelling
+// ─────────────────────────────────────────────────────────────
+function m3EvaluateSpelling() {
+  const ws      = getWordSet();
+  const w       = ws[state.idx];
+  const target  = w.word.toLowerCase();
+  const spelled = m3SpelledLetters.join('').toLowerCase();
+
+  m3ShowLetterBoxes(m3SpelledLetters, 'result');
+  document.getElementById('m3-retry-btn').style.display = 'flex';
+
+  if (spelled === target) {
+    state.score += 10 + (state.hintCount === 0 ? 5 : 0);
+    state.streak++;
+    getCurStatus()[state.idx] = 'correct';
+    document.getElementById('m3-stage-word').textContent   = w.word;
+    document.getElementById('m3-stage-prompt').textContent = '🎉 ¡Deletreo perfecto!';
+    const litCount = state.hintCount === 0 ? 3 : state.hintCount === 1 ? 2 : 1;
+    document.querySelectorAll('#m3-stars .star').forEach((s, i) => {
+      if (i < litCount) setTimeout(() => s.classList.add('lit'), i * 200);
+    });
+    m3SetStatus('✅ ¡CORRECTO! ¡Eres una campeona! 🌟', '');
+    launchConfetti();
+    speak('Excellent! Perfect spelling!');
+    setTimeout(() => {
+      showFeedback(true, w.word, w.es, () => {
+        if (state.idx < ws.length - 1) { state.idx++; m3Render(); }
+        else showCompletion();
+      });
+    }, 1000);
+  } else {
+    state.streak = 0;
+    getCurStatus()[state.idx] = 'wrong';
+    const hits = target.split('').filter((l, i) => l === (spelled[i] || '')).length;
+    const pct  = Math.round(hits / target.length * 100);
+    m3SetStatus(pct >= 60
+      ? `❌ ¡Casi! ${hits}/${target.length} letras. ¡Inténtalo de nuevo! 💪`
+      : `❌ Inténtalo de nuevo. Respuesta: ${w.word.toUpperCase()}`, '');
+    document.getElementById('m3-stage-prompt').textContent = `Respuesta: ${w.word.toUpperCase()}`;
+    speak('Try again!');
+    showFeedback(false, w.word, w.es, () => {});
+  }
+  document.getElementById('m3-score').textContent  = state.score;
+  document.getElementById('m3-streak').textContent = state.streak;
+}
+
+function m3Retry() {
+  m3RawTranscripts = [];
+  m3SpelledLetters = [];
+  m3ShowLetterBoxes([], 'blank');
+  m3StopCountdown();
+  m3SetStatus('Presiona el micrófono para deletrear', '');
+  document.getElementById('m3-retry-btn').style.display  = 'none';
+  document.getElementById('m3-transcript').style.display = 'none';
+  document.getElementById('m3-transcript').textContent   = '';
+  document.getElementById('m3-stage-prompt').textContent = '🎤 Escucha la palabra y ¡deletréala en voz alta!';
+  document.getElementById('m3-stage-word').textContent   = '?????';
+  document.querySelectorAll('#m3-stars .star').forEach(s => s.classList.remove('lit'));
+  speak(getWordSet()[state.idx].word);
+}
+
+// ─────────────────────────────────────────────────────────────
+// Diff / Render / UI helpers
+// ─────────────────────────────────────────────────────────────
+function m3SetDiff(diff) {
+  state.diff = diff; state.idx = 0; state.hintCount = 0;
+  if (m3IsRecording) m3StopVoice(false);
+  updateDiffTabs('m3', diff);
+  m3Render();
+}
+
+function m3Render() {
+  const ws = getWordSet();
+  const w  = ws[state.idx];
+  state.hintCount  = 0;
+  m3RawTranscripts = [];
+  m3SpelledLetters = [];
+  if (m3IsRecording) { m3IsRecording = false; m3StopCountdown(); }
+  if (recognition) { try { recognition.stop(); } catch(_) {} recognition = null; }
+
+  document.getElementById('m3-stage-word').textContent   = '?????';
+  document.getElementById('m3-stage-prompt').textContent = '🎤 Escucha y deletrea letra por letra en inglés';
+  document.getElementById('m3-translation').textContent  = '🇲🇽 ' + w.es;
+  document.getElementById('m3-emoji').textContent        = w.emoji;
+  document.getElementById('m3-counter').textContent      = (state.idx + 1) + '/' + ws.length;
+  document.getElementById('m3-progress').style.width     = ((state.idx + 1) / ws.length * 100) + '%';
+  document.getElementById('m3-score').textContent        = state.score;
+  document.getElementById('m3-streak').textContent       = state.streak;
+  document.getElementById('m3-mic-btn').disabled         = false;
+
+  document.querySelectorAll('#m3-stars .star').forEach(s => s.classList.remove('lit'));
+  m3SetMicState('idle');
+  m3SetStatus('Presiona el micrófono para deletrear', '');
+  m3ShowLetterBoxes([], 'blank');
+  document.getElementById('m3-retry-btn').style.display  = 'none';
+  document.getElementById('m3-perm-help').style.display  = 'none';
+  document.getElementById('m3-soundwave').classList.remove('active');
+  document.getElementById('m3-transcript').style.display = 'none';
+  document.getElementById('m3-transcript').textContent   = '';
+  m3StopCountdown();
+  updateNavStrip('m3-nav-strip');
+  setTimeout(() => speak(w.word), 500);
+}
+
+function m3ShowLetterBoxes(letters, mode) {
+  const target    = getWordSet()[state.idx].word.toLowerCase();
+  const container = document.getElementById('m3-voice-letters');
+  container.innerHTML = target.split('').map((tL, i) => {
+    const filled = letters[i];
+    let cls = 'v-letter', display = '';
+    if (mode === 'interim' && filled) {
+      cls = 'v-letter filled'; display = filled.toUpperCase();
+    } else if (mode === 'result' && filled) {
+      cls = filled.toLowerCase() === tL ? 'v-letter correct-letter' : 'v-letter wrong-letter';
+      display = filled.toUpperCase();
+    } else if (mode === 'result' && !filled) {
+      cls = 'v-letter wrong-letter'; display = '?';
+    }
+    return `<div class="${cls}" style="animation-delay:${i * 0.05}s">${display}</div>`;
+  }).join('');
+  if (letters.length > target.length && mode !== 'blank') {
+    container.innerHTML += letters.slice(target.length)
+      .map(l => `<div class="v-letter wrong-letter">${l.toUpperCase()}</div>`).join('');
+  }
+}
+
+function m3SetStatus(msg, type) {
+  const el = document.getElementById('m3-voice-status');
+  el.textContent = msg;
+  el.className   = 'voice-status' + (type === 'listening' ? ' listening' : '');
+}
+
+function m3SetMicState(s) {
+  const btn = document.getElementById('m3-mic-btn');
+  if (s === 'recording') {
+    btn.classList.add('recording');
+    btn.querySelector('.mic-icon').textContent  = '⏹';
+    btn.querySelector('.mic-label').textContent = '¡Listo!';
+    btn.onclick = () => m3StopVoice(true);
+  } else {
+    btn.classList.remove('recording');
+    btn.querySelector('.mic-icon').textContent  = '🎤';
+    btn.querySelector('.mic-label').textContent = '¡Deletrear!';
+    btn.onclick = () => m3StartVoice();
+  }
+}
+
+function m3Hint() {
+  const w = getWordSet()[state.idx];
+  state.hintCount++;
+  const hints = [
+    () => { document.getElementById('m3-stage-word').textContent = w.word[0] + '_'.repeat(w.word.length - 1); speak('It starts with ' + w.word[0]); },
+    () => { document.getElementById('m3-stage-word').textContent = w.word.slice(0,2) + '_'.repeat(w.word.length - 2); speak('It has ' + w.word.length + ' letters'); },
+    () => { document.getElementById('m3-stage-word').textContent = w.word; speak(w.word); },
+  ];
+  if (state.hintCount <= hints.length) hints[state.hintCount - 1]();
+}
+
+function m3Skip() {
+  if (m3IsRecording) m3StopVoice(false);
+  const ws = getWordSet();
+  getCurStatus()[state.idx] = 'wrong';
+  speak('Skipped');
+  if (state.idx < ws.length - 1) { state.idx++; m3Render(); }
+  else showCompletion();
+}
+// ============================================================
+// FEEDBACK
+// ============================================================
+function showFeedback(isCorrect, word, translation, callback) {
+  const overlay = document.getElementById('feedback-overlay');
+  const emoji   = document.getElementById('fb-emoji');
+  const title   = document.getElementById('fb-title');
+  const text    = document.getElementById('fb-text');
+  const wordEl  = document.getElementById('fb-word');
+  const btn     = overlay.querySelector('.ctrl-btn');
+
+  const correctEmojis = ['🎉','🌟','🏆','🥳','⭐','🎊','💯'];
+  const wrongEmojis   = ['💪','🤔','😅','🔄'];
+
+  emoji.textContent = isCorrect 
+    ? correctEmojis[Math.floor(Math.random() * correctEmojis.length)]
+    : wrongEmojis[Math.floor(Math.random() * wrongEmojis.length)];
+
+  title.textContent = isCorrect ? '¡Correcto! 🎉' : '¡Casi! 💪';
+  title.className = 'feedback-title ' + (isCorrect ? 'correct-title' : 'wrong-title');
+  text.textContent = isCorrect 
+    ? '¡Excelente deletreo! ¡Eres una campeona!' 
+    : `La palabra correcta es: (${translation} en español)`;
+  wordEl.textContent = word.toUpperCase();
+
+  btn.onclick = () => { closeFeedback(); if(callback) callback(); };
+
+  overlay.classList.add('show');
+}
+
+function closeFeedback() {
+  document.getElementById('feedback-overlay').classList.remove('show');
+}
+
+// ============================================================
+// CONFETTI
+// ============================================================
+function launchConfetti() {
+  const colors = ['#fbbf24','#60a5fa','#4ade80','#f472b6','#a78bfa','#fb7185'];
+  for (let i = 0; i < 50; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti-piece';
+    c.style.cssText = `
+      left: ${Math.random() * 100}%;
+      background: ${colors[Math.floor(Math.random() * colors.length)]};
+      width: ${6 + Math.random() * 10}px;
+      height: ${6 + Math.random() * 10}px;
+      border-radius: ${Math.random() > 0.5 ? '50%' : '3px'};
+      animation-duration: ${1.5 + Math.random() * 2}s;
+      animation-delay: ${Math.random() * 0.5}s;
+    `;
+    document.body.appendChild(c);
+    c.addEventListener('animationend', () => c.remove());
+  }
+}
+
+// ============================================================
+// COMPLETION
+// ============================================================
+function showCompletion() {
+  launchConfetti();
+  setTimeout(launchConfetti, 800);
+  
+  const ws = getWordSet();
+  const status = getCurStatus();
+  const correct = status.filter(s => s === 'correct').length;
+  const pct = Math.round(correct / ws.length * 100);
+
+  const existing = document.getElementById('completion-overlay');
+  if (existing) existing.remove();
+  
+  const completionHTML = `
+    <div class="completion-screen">
+      <span class="completion-trophy">${pct >= 80 ? '🏆' : pct >= 60 ? '🥈' : '🥉'}</span>
+      <h1 class="completion-title">¡${pct >= 80 ? 'Campeona Spelling Bee!' : pct >= 60 ? 'Muy bien!' : 'Buen intento!'}</h1>
+      <p class="completion-score">Puntuación: ${state.score} pts · ${correct}/${ws.length} correctas · ${pct}%</p>
+      <div class="stars" style="justify-content:center; margin-bottom:24px">
+        <span class="star ${pct >= 33 ? 'lit' : ''}" style="font-size:2.5rem">⭐</span>
+        <span class="star ${pct >= 66 ? 'lit' : ''}" style="font-size:2.5rem">⭐</span>
+        <span class="star ${pct >= 90 ? 'lit' : ''}" style="font-size:2.5rem">⭐</span>
+      </div>
+      <p style="color:#a5b4fc; font-size:1.1rem; margin-bottom:30px; font-weight:700;">
+        ${pct >= 80 ? '¡Increíble! ¡Eres una super estudiante!' : '¡Sigue practicando, vas muy bien!'}
+      </p>
+      <button class="ctrl-btn primary" style="font-size:1.2rem; padding:16px 32px;" onclick="goHome()">
+        🏠 Volver al inicio
+      </button>
+      <button class="ctrl-btn success" style="font-size:1.1rem; padding:14px 28px; margin-top:12px;" onclick="document.getElementById('completion-overlay').remove(); startMethod(${currentMethod})">
+        🔄 Intentar de nuevo
+      </button>
+    </div>
+  `;
+  
+  document.body.insertAdjacentHTML('beforeend', `<div id="completion-overlay" style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:300">${completionHTML}</div>`);
+  speak(pct >= 80 ? 'Congratulations! You are a spelling bee champion!' : 'Great job! Keep practicing!');
+}
+
+// ============================================================
+// VOICES
+// ============================================================
+window.speechSynthesis.onvoiceschanged = () => { speechSynthesis.getVoices(); };
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('load', () => {
+  // Preload voices
+  if (window.speechSynthesis) {
+    speechSynthesis.getVoices();
+    // Warm up
+    const u = new SpeechSynthesisUtterance(' ');
+    u.volume = 0;
+    speechSynthesis.speak(u);
+  }
+  showScreen('home');
+});
+</script>
+</body>
+</html>
